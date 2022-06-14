@@ -5,13 +5,13 @@ import type { IUserRequestWithPayload } from "../types";
 
 const router = Router();
 
-router.get("/", (req, res) => {
+router.post("/login", (req, res) => {
   res.json({
-    message: "Hello World from user",
+    message: "login",
   });
 });
 
-router.post("/", async (req: IUserRequestWithPayload, res) => {
+router.post("/signup", async (req: IUserRequestWithPayload, res) => {
   const { password, email } = req.body;
 
   if (!password || !email) {
@@ -33,25 +33,5 @@ router.post("/", async (req: IUserRequestWithPayload, res) => {
 
   return res.status(201).json(user);
 });
-
-router.put("/", async (req: IUserRequestWithPayload, res) => {
-  const { password, email } = req.body;
-
-  const user = await prisma.user.update({
-    where: {},
-    data: {
-      email,
-      password: password ? bcrypt.hashSync(password, 10) : undefined,
-    },
-    select: {
-      id: true,
-      email: true,
-    },
-  });
-
-  return res.status(200).json(user);
-});
-
-router.delete("/", (req, res) => {});
 
 export default router;
