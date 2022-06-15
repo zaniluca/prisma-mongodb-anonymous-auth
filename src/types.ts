@@ -1,6 +1,10 @@
-import type { User } from "@prisma/client";
 import type { Request } from "express";
+import type { Request as ExpressJwtRequest } from "express-jwt";
 
-export interface IUserRequestWithPayload extends Request {
-  body: Partial<User>;
+export interface RequestWithPayload<T> extends Request {
+  body: Partial<T>;
+}
+
+export interface AuthRequestWithPayload<T> extends ExpressJwtRequest {
+  body: Partial<T>;
 }

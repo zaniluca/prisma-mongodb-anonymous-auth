@@ -1,29 +1,16 @@
 import { Router } from "express";
 import { prisma } from "../../prisma/client";
 import bcrypt from "bcrypt";
-import type { IUserRequestWithPayload } from "../types";
+import type { AuthRequestWithPayload } from "../types";
+import type { User } from "@prisma/client";
+import type { Request as ExpressJwtRequest } from "express-jwt";
 
 const router = Router();
 
-router.get("/", (req, res) => {
-  res.json({
-    message: "Hello World from user",
-  });
-});
-
-router.post("/", async (req: IUserRequestWithPayload, res) => {
-  const { password, email } = req.body;
-
-  if (!password || !email) {
-    return res.status(400).json({
-      message: "Missing required fields",
-    });
-  }
-
-  const user = await prisma.user.create({
-    data: {
-      email,
-      password: bcrypt.hashSync(password, 10),
+router.get("/", async (req: ExpressJwtRequest, res) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: req.auth?.userId,
     },
     select: {
       id: true,
@@ -31,14 +18,16 @@ router.post("/", async (req: IUserRequestWithPayload, res) => {
     },
   });
 
-  return res.status(201).json(user);
+  return res.json(user);
 });
 
-router.put("/", async (req: IUserRequestWithPayload, res) => {
+router.put("/", async (req: AuthRequestWithPayload<User>, res) => {
   const { password, email } = req.body;
 
   const user = await prisma.user.update({
-    where: {},
+    where: {
+      id: req.auth?.userId,
+    },
     data: {
       email,
       password: password ? bcrypt.hashSync(password, 10) : undefined,
@@ -52,6 +41,16 @@ router.put("/", async (req: IUserRequestWithPayload, res) => {
   return res.status(200).json(user);
 });
 
-router.delete("/", (req, res) => {});
+router.delete("/", async (req: ExpressJwtRequest, res) => {
+  await prisma.user.delete({
+    where: {
+      id: req.auth?.userId,
+    },
+  });
+
+  return res.status(200).json({
+    message: "User deleted",
+  });
+});
 
 export default router;
