@@ -2,8 +2,12 @@ import { Router } from "express";
 import { prisma } from "../../prisma/client";
 import bcrypt from "bcrypt";
 import type { RequestWithPayload } from "../types";
-import type { User } from "@prisma/client";
-import { generateJWTToken } from "../utils";
+import {
+  getAccessToken,
+  getRefreshToken,
+  getUidFromToken,
+  validateRefreshToken,
+} from "../utils";
 
 const router = Router();
 
@@ -34,42 +38,48 @@ router.post("/login", async (req: RequestWithPayload<AuthPayload>, res) => {
   }
 
   return res.status(200).json({
-    accessToken: generateJWTToken(user),
-    refreshToken: generateJWTToken(user, "7d"),
+    accessToken: getAccessToken(user.id),
+    refreshToken: getRefreshToken(user.id),
   });
 });
 
 router.post("/signup", async (req: RequestWithPayload<AuthPayload>, res) => {
   const { password, email } = req.body;
+  const isAnonymous = !password && !email;
 
-  if (!password || !email) {
+  if (!isAnonymous && ((password && !email) || (!password && email))) {
     return res.status(400).json({
       message: "Missing required fields",
     });
   }
 
-  const alreadyExists = await prisma.user.count({
-    where: {
-      email,
-    },
-  });
-
-  if (alreadyExists) {
-    return res.status(400).json({
-      message: "User already exists",
+  if (!isAnonymous) {
+    const alreadyExists = await prisma.user.count({
+      where: {
+        email,
+      },
     });
+
+    if (alreadyExists) {
+      return res.status(400).json({
+        message: "User already exists",
+      });
+    }
   }
 
   const user = await prisma.user.create({
     data: {
       email,
-      password: bcrypt.hashSync(password, 10),
+      password: password ? bcrypt.hashSync(password, 10) : undefined,
+    },
+    select: {
+      id: true,
     },
   });
 
   return res.status(201).json({
-    accessToken: generateJWTToken(user),
-    refreshToken: generateJWTToken(user, "7d"),
+    accessToken: getAccessToken(user.id),
+    refreshToken: getRefreshToken(user.id),
   });
 });
 
@@ -87,6 +97,18 @@ router.post(
         message: "Missing required fields",
       });
     }
+
+    if (!validateRefreshToken(refreshToken)) {
+      return res.status(403).json({
+        message: "Invalid refresh token",
+      });
+    }
+
+    const uid = getUidFromToken(refreshToken);
+
+    return res.status(200).json({
+      accessToken: getAccessToken(uid),
+    });
   }
 );
 
