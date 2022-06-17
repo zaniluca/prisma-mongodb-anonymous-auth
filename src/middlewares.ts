@@ -1,13 +1,22 @@
 import type { NextFunction, Request, Response } from "express";
 import { expressjwt } from "express-jwt";
 
+type AuthRequiredOptions = {
+  failIfNoTokenFound: boolean;
+};
+
 /**
- * Require a user to be logged in for the given route.
+ * Require a JWT token to be present in the request.
+ * @param failIfNoTokenFound If true (default) throw an error if no token is found.
  */
-export const authRequired = expressjwt({
-  secret: process.env.JWT_ACCESS_SECRET!,
-  algorithms: ["HS256"],
-});
+export const authRequired = ({
+  failIfNoTokenFound = true,
+}: AuthRequiredOptions) =>
+  expressjwt({
+    secret: process.env.JWT_ACCESS_SECRET!,
+    algorithms: ["HS256"],
+    credentialsRequired: failIfNoTokenFound,
+  });
 
 /**
  * Handle a failed JWT authentication.

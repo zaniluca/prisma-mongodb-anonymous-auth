@@ -1,13 +1,15 @@
-import { Router } from "express";
+import { Router, Request } from "express";
 import { prisma } from "../../prisma/client";
 import bcrypt from "bcrypt";
-import type { RequestWithPayload } from "../types";
+import type { AuthRequestWithPayload, RequestWithPayload } from "../types";
 import {
   getAccessToken,
   getRefreshToken,
   getUidFromToken,
   validateRefreshToken,
 } from "../utils";
+import { authRequired } from "../middlewares";
+import type { User } from "@prisma/client";
 
 const router = Router();
 
@@ -43,17 +45,19 @@ router.post("/login", async (req: RequestWithPayload<AuthPayload>, res) => {
   });
 });
 
-router.post("/signup", async (req: RequestWithPayload<AuthPayload>, res) => {
-  const { password, email } = req.body;
-  const isAnonymous = !password && !email;
+router.post(
+  "/signup",
+  authRequired({ failIfNoTokenFound: false }),
+  async (req: AuthRequestWithPayload<AuthPayload>, res) => {
+    const { password, email } = req.body;
+    const isAnonymous = !!req.auth?.uid;
 
-  if (!isAnonymous && ((password && !email) || (!password && email))) {
-    return res.status(400).json({
-      message: "Missing required fields",
-    });
-  }
+    if (!password || !email) {
+      return res.status(400).json({
+        message: "Missing required fields",
+      });
+    }
 
-  if (!isAnonymous) {
     const alreadyExists = await prisma.user.count({
       where: {
         email,
@@ -65,13 +69,45 @@ router.post("/signup", async (req: RequestWithPayload<AuthPayload>, res) => {
         message: "User already exists",
       });
     }
-  }
 
+    let user: Pick<User, "id">;
+
+    if (isAnonymous) {
+      // Upgrading anonymous user to permanent user
+      user = await prisma.user.update({
+        where: {
+          id: req.auth?.uid,
+        },
+        data: {
+          email,
+          password: password ? bcrypt.hashSync(password, 10) : undefined,
+        },
+        select: {
+          id: true,
+        },
+      });
+    } else {
+      user = await prisma.user.create({
+        data: {
+          email,
+          password: password ? bcrypt.hashSync(password, 10) : undefined,
+        },
+        select: {
+          id: true,
+        },
+      });
+    }
+
+    return res.status(201).json({
+      accessToken: getAccessToken(user.id),
+      refreshToken: getRefreshToken(user.id),
+    });
+  }
+);
+
+router.post("/anonymous", async (_req: Request, res) => {
   const user = await prisma.user.create({
-    data: {
-      email,
-      password: password ? bcrypt.hashSync(password, 10) : undefined,
-    },
+    data: {},
     select: {
       id: true,
     },
