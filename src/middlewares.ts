@@ -9,13 +9,13 @@ type AuthRequiredOptions = {
  * Require a JWT token to be present in the request.
  * @param failIfNoTokenFound If true (default) throw an error if no token is found.
  */
-export const authRequired = ({
-  failIfNoTokenFound = true,
-}: AuthRequiredOptions) =>
+export const authRequired = (
+  options: AuthRequiredOptions | undefined = undefined
+) =>
   expressjwt({
     secret: process.env.JWT_ACCESS_SECRET!,
     algorithms: ["HS256"],
-    credentialsRequired: failIfNoTokenFound,
+    credentialsRequired: options?.failIfNoTokenFound,
   });
 
 /**
@@ -30,7 +30,7 @@ export const handleUnauthorizedError = (
 ) => {
   if (err.name === "UnauthorizedError") {
     return res.status(403).json({
-      message: "Unauthenticated",
+      message: "Unauthorized",
     });
   } else {
     next(err);
