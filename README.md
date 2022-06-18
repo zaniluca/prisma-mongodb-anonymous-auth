@@ -6,7 +6,7 @@ Anonymous login is a fantastic way to identify your users without asking them to
 
 ## How to run
 
-Create a .env file in the root of the project and add the following lines:
+Create a `.env` file in the root of the project and add the following lines:
 
 ```
 DATABASE_URL=mongodb+srv://<username>:<password>@cluster0.abksm.mongodb.net/yourDbName
@@ -20,7 +20,7 @@ Now simply run `yarn install` and `yarn start` to start the server
 
 ## Libraries:
 
-The entire codebase is written in typescript and uses these libraries:
+The entire codebase is written in `typescript` and uses these libraries:
 
 - [prisma](https://www.prisma.io/)
 - [jsonwebtoken](https://jwt.io/)
