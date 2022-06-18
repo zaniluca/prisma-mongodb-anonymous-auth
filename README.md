@@ -2,7 +2,7 @@
 
 > Anonymous authentication with Prisma, MongoDB, JWT and typescript
 
-Anonymous login its an amazing way to identify your users even without the need to ask them to signup for an account. This is a pain for the user so by not forcing him to create an account your also helping to increase the userbase.
+Anonymous login is a fantastic way to identify your users without asking them to sign up for an account. This is a pain for the user so by not forcing him to create an account your also helping to increase the userbase.
 
 ## How to run
 
@@ -14,7 +14,7 @@ JWT_ACCESS_SECRET=<your-secret-here>
 JWT_REFRESH_SECRET=<your-secret-here>
 ```
 
-We're using [mongodb atlas](https://cloud.mongodb.com) as our database provider because `Prisma needs to perform transactions, which requires your MongoDB server to be run as a replica set`; which is duable in a local dev environment but its quite a pain so this is the easiest way to get started
+We're using [mongodb atlas](https://cloud.mongodb.com) as our database provider because `Prisma needs to perform transactions, which requires your MongoDB server to be run as a replica set`; which is doable in a local dev environment but it's quite a pain so this is the easiest way to get started
 
 Now simply run `yarn install` and `yarn start` to start the server
 
