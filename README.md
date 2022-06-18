@@ -8,7 +8,7 @@ Anonymous login is a fantastic way to identify your users without asking them to
 
 Create a .env file in the root of the project and add the following lines:
 
-```env
+```
 DATABASE_URL=mongodb+srv://<username>:<password>@cluster0.abksm.mongodb.net/yourDbName
 JWT_ACCESS_SECRET=<your-secret-here>
 JWT_REFRESH_SECRET=<your-secret-here>
