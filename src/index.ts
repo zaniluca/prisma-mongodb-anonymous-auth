@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import user from "./routes/user";
 import auth from "./routes/auth";
-import { authRequired, handleUnauthorizedError } from "./middlewares";
+import { handleUnauthorizedError } from "./middlewares";
 import { expressjwt } from "express-jwt";
 
 dotenv.config();

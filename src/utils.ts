@@ -42,7 +42,11 @@ export const getRefreshToken = (uid: string) => {
  * @returns user ID associatex with provided token
  */
 export const getUidFromToken = (token: string) => {
-  return (jwt.decode(token) as CustomJWTClaims).uid;
+  try {
+    return (jwt.decode(token) as CustomJWTClaims).uid;
+  } catch (e) {
+    throw new Error("Invalid token");
+  }
 };
 
 /**
@@ -50,7 +54,11 @@ export const getUidFromToken = (token: string) => {
  * @param token JWT token
  */
 export const validateRefreshToken = (token: string) => {
-  return (
-    jwt.decode(token) && jwt.verify(token, process.env.JWT_REFRESH_SECRET!)
-  );
+  try {
+    jwt.decode(token);
+    return jwt.verify(token, process.env.JWT_REFRESH_SECRET!);
+  } catch (e) {
+    console.error("Could not decode refresh token: ", e);
+    return false;
+  }
 };
