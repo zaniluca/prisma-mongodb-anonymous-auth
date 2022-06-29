@@ -24,7 +24,7 @@ The entire codebase is written in `typescript` and uses these libraries:
 
 - [prisma](https://www.prisma.io/)
 - [jsonwebtoken](https://jwt.io/)
-- express
+- [express](https://expressjs.com/it/)
 - [express-jwt](https://www.npmjs.com/package/express-jwt) (ready to use jwt middleware)
 
 ## Project Structure
